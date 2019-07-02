@@ -11,6 +11,7 @@ import Nimble
 import SnapshotTesting
 import SnapshotTesting_Nimble
 
+// This test was recorded with iPhone Xʀ (12.2)
 class SnapshotTestingNimbleSpec: QuickSpec {
 
     override func spec() {

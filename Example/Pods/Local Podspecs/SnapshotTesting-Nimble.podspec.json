@@ -1,6 +1,6 @@
 {
   "name": "SnapshotTesting-Nimble",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "summary": "Nimble matchers for swift-snapshot-testing by pointfreeco",
   "description": "Implementation heavily inspired by Ash Furrow's wonderful Nimble-Snapshots.",
   "homepage": "https://github.com/killectro/swift-snapshot-testing-nimble",
@@ -15,13 +15,13 @@
   },
   "dependencies": {
     "SnapshotTesting": [
-      "1.0.0"
+      "1.5.0"
     ],
     "Nimble": [
 
     ]
   },
-  "swift_version": "4.2",
+  "swift_versions": "5.0",
   "platforms": {
     "ios": "10.0",
     "osx": "10.10",
@@ -31,5 +31,6 @@
   "source_files": [
     "SnapshotTesting-Nimble/Classes",
     "SnapshotTesting-Nimble/Classes/*.{h,m,swift}"
-  ]
+  ],
+  "swift_version": "5.0"
 }

@@ -156,6 +156,19 @@ public struct ViewImageConfig {
     }
     return .init(safeArea: .init(top: 20, left: 0, bottom: 0, right: 0), size: size, traits: .iPadPro10_5)
   }
+  
+  public static let iPadPro11 = ViewImageConfig.iPadPro11(.landscape)
+  
+  public static func iPadPro11(_ orientation: Orientation) -> ViewImageConfig {
+    let size: CGSize
+    switch orientation {
+    case .landscape:
+      size = .init(width: 1194, height: 834)
+    case .portrait:
+      size = .init(width: 834, height: 1194)
+    }
+    return .init(safeArea: .init(top: 24, left: 0, bottom: 20, right: 0), size: size, traits: .iPadPro11)
+  }
 
   public static let iPadPro12_9 = ViewImageConfig.iPadPro12_9(.landscape)
 
@@ -350,6 +363,7 @@ extension UITraitCollection {
 
   public static let iPadMini = iPad
   public static let iPadPro10_5 = iPad
+  public static let iPadPro11 = iPad
   public static let iPadPro12_9 = iPad
 
   private static let iPad = UITraitCollection(
@@ -472,6 +486,39 @@ private final class NavigationDelegate: NSObject, WKNavigationDelegate {
 #endif
 
 #if os(iOS) || os(tvOS)
+func prepareView(
+  config: ViewImageConfig,
+  drawHierarchyInKeyWindow: Bool,
+  traits: UITraitCollection,
+  view: UIView,
+  viewController: UIViewController
+  ) {
+  let size = config.size ?? viewController.view.frame.size
+  guard size.width > 0, size.height > 0 else {
+    fatalError("View not renderable to image at size \(size)")
+  }
+  view.frame.size = size
+  if view != viewController.view {
+    viewController.view.bounds = view.bounds
+    viewController.view.addSubview(view)
+  }
+  let traits = UITraitCollection(traitsFrom: [config.traits, traits])
+  let window: UIWindow
+  if drawHierarchyInKeyWindow {
+    guard let keyWindow = UIApplication.shared.keyWindow else {
+      fatalError("'drawHierarchyInKeyWindow' requires tests to be run in a host application")
+    }
+    window = keyWindow
+    window.frame.size = size
+  } else {
+    window = Window(
+      config: .init(safeArea: config.safeArea, size: config.size ?? size, traits: traits),
+      viewController: viewController
+    )
+  }
+  add(traits: traits, viewController: viewController, to: window)
+}
+
 func snapshotView(
   config: ViewImageConfig,
   drawHierarchyInKeyWindow: Bool,
@@ -480,33 +527,16 @@ func snapshotView(
   viewController: UIViewController
   )
   -> Async<UIImage> {
-    let size = config.size ?? viewController.view.frame.size
-    guard size.width > 0, size.height > 0 else {
-      fatalError("View not renderable to image at size \(size)")
-    }
     let initialFrame = view.frame
+    prepareView(
+      config: config,
+      drawHierarchyInKeyWindow: drawHierarchyInKeyWindow,
+      traits: traits,
+      view: view,
+      viewController: viewController
+    )
     // NB: Avoid safe area influence.
     if config.safeArea == .zero { view.frame.origin = .init(x: offscreen, y: offscreen) }
-    view.frame.size = size
-    if view != viewController.view {
-      viewController.view.bounds = view.bounds
-      viewController.view.addSubview(view)
-    }
-    let traits = UITraitCollection(traitsFrom: [config.traits, traits])
-    let window: UIWindow
-    if drawHierarchyInKeyWindow {
-      guard let keyWindow = UIApplication.shared.keyWindow else {
-        fatalError("'drawHierarchyInKeyWindow' requires tests to be run in a host application")
-      }
-      window = keyWindow
-      window.frame.size = size
-    } else {
-      window = Window(
-        config: .init(safeArea: config.safeArea, size: config.size ?? size, traits: traits),
-        viewController: viewController
-      )
-    }
-    add(traits: traits, viewController: viewController, to: window)
     return view.snapshot ?? Async { callback in
       addImagesForRenderedViews(view).sequence().run { views in
         callback(
@@ -540,10 +570,21 @@ private func add(traits: UITraitCollection, viewController: UIViewController, to
   let rootViewController = UIViewController()
   rootViewController.view.backgroundColor = .clear
   rootViewController.view.frame = window.frame
+  rootViewController.view.translatesAutoresizingMaskIntoConstraints =
+    viewController.view.translatesAutoresizingMaskIntoConstraints
   rootViewController.preferredContentSize = rootViewController.view.frame.size
-  viewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
   viewController.view.frame = rootViewController.view.frame
   rootViewController.view.addSubview(viewController.view)
+  if viewController.view.translatesAutoresizingMaskIntoConstraints {
+    viewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+  } else {
+    NSLayoutConstraint.activate([
+      viewController.view.topAnchor.constraint(equalTo: rootViewController.view.topAnchor),
+      viewController.view.bottomAnchor.constraint(equalTo: rootViewController.view.bottomAnchor),
+      viewController.view.leadingAnchor.constraint(equalTo: rootViewController.view.leadingAnchor),
+      viewController.view.trailingAnchor.constraint(equalTo: rootViewController.view.trailingAnchor),
+      ])
+  }
   rootViewController.addChild(viewController)
   rootViewController.setOverrideTraitCollection(traits, forChild: viewController)
   viewController.didMove(toParent: rootViewController)
@@ -554,7 +595,7 @@ private func add(traits: UITraitCollection, viewController: UIViewController, to
   rootViewController.view.layoutIfNeeded()
 }
 
-private class Window: UIWindow {
+private final class Window: UIWindow {
   var config: ViewImageConfig
 
   init(config: ViewImageConfig, viewController: UIViewController) {
@@ -603,6 +644,7 @@ private final class ScaledWindow: NSWindow {
   }
 }
 #endif
+#endif
 
 extension Array {
   func sequence<A>() -> Async<[A]> where Element == Async<A> {
@@ -623,4 +665,3 @@ extension Array {
     }
   }
 }
-#endif

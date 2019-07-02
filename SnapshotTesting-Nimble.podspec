@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name = "SnapshotTesting-Nimble"
-    s.version = "0.1.0"
+    s.version = "0.2.0"
     s.summary = "Nimble matchers for swift-snapshot-testing by pointfreeco"
 
     s.description = <<-DESC
@@ -21,10 +21,10 @@ Pod::Spec.new do |s|
         :tag => "0.1.0"
     }
 
-    s.dependency "SnapshotTesting", "1.0.0"
+    s.dependency "SnapshotTesting", "1.5.0"
     s.dependency "Nimble"
 
-    s.swift_version = "4.2"
+    s.swift_version = "5.0"
 
     s.ios.deployment_target = "10.0"
     s.osx.deployment_target = "10.10"

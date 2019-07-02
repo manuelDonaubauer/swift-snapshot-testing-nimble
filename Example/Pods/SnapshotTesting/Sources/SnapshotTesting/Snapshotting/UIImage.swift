@@ -2,10 +2,35 @@
 import UIKit
 import XCTest
 
-extension Attachment {
-  public init(image: UIImage, name: String? = nil) {
-    self.rawValue = XCTAttachment(image: image)
-    self.rawValue.name = name
+extension Diffing where Value == UIImage {
+  /// A pixel-diffing strategy for UIImage's which requires a 100% match.
+  public static let image = Diffing.image(precision: 1)
+
+  /// A pixel-diffing strategy for UIImage that allows customizing how precise the matching must be.
+  ///
+  /// - Parameter precision: A value between 0 and 1, where 1 means the images must match 100% of their pixels.
+  /// - Returns: A new diffing strategy.
+  public static func image(precision: Float) -> Diffing {
+    return Diffing(
+      toData: { $0.pngData()! },
+      fromData: { UIImage(data: $0, scale: UIScreen.main.scale)! }
+    ) { old, new in
+      guard !compare(old, new, precision: precision) else { return nil }
+      let difference = SnapshotTesting.diff(old, new)
+      let message = new.size == old.size
+        ? "Newly-taken snapshot does not match reference."
+        : "Newly-taken snapshot@\(new.size) does not match reference@\(old.size)."
+      let oldAttachment = XCTAttachment(image: old)
+      oldAttachment.name = "reference"
+      let newAttachment = XCTAttachment(image: new)
+      newAttachment.name = "failure"
+      let differenceAttachment = XCTAttachment(image: difference)
+      differenceAttachment.name = "difference"
+      return (
+        message,
+        [oldAttachment, newAttachment, differenceAttachment]
+      )
+    }
   }
 }
 
@@ -21,24 +46,7 @@ extension Snapshotting where Value == UIImage, Format == UIImage {
   public static func image(precision: Float) -> Snapshotting {
     return .init(
       pathExtension: "png",
-      diffing: .init(
-        toData: { $0.pngData()! },
-        fromData: { UIImage(data: $0, scale: UIScreen.main.scale)! }
-      ) { old, new in
-        guard !compare(old, new, precision: precision) else { return nil }
-        let difference = diff(old, new)
-        let message = new.size == old.size
-          ? "Expected snapshot to match reference"
-          : "Expected snapshot@\(new.size) to match reference@\(old.size)"
-        return (
-          message,
-          [
-            .init(image: old, name: "reference"),
-            .init(image: new, name: "failure"),
-            .init(image: difference, name: "difference")
-          ]
-        )
-      }
+      diffing: .image(precision: precision)
     )
   }
 }

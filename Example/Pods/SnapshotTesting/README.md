@@ -1,6 +1,6 @@
 # 📸 SnapshotTesting
 
-[![Swift 4.2](https://img.shields.io/badge/swift-4.2-ED523F.svg?style=flat)](https://swift.org/download/) [![iOS/macOS/tvOS CI](https://img.shields.io/circleci/project/github/pointfreeco/swift-snapshot-testing/master.svg?label=ios/macos/tvos)](https://circleci.com/gh/pointfreeco/swift-snapshot-testing) [![Linux CI](https://img.shields.io/travis/pointfreeco/swift-snapshot-testing/master.svg?label=linux)](https://travis-ci.org/pointfreeco/swift-nonempty) [![@pointfreeco](https://img.shields.io/badge/contact-@pointfreeco-5AA9E7.svg?style=flat)](https://twitter.com/pointfreeco)
+[![Swift 5](https://img.shields.io/badge/swift-5-ED523F.svg?style=flat)](https://swift.org/download/) [![iOS/macOS/tvOS CI](https://img.shields.io/circleci/project/github/pointfreeco/swift-snapshot-testing/master.svg?label=ios/macos/tvos)](https://circleci.com/gh/pointfreeco/swift-snapshot-testing) [![Linux CI](https://img.shields.io/travis/pointfreeco/swift-snapshot-testing/master.svg?label=linux)](https://travis-ci.org/pointfreeco/swift-snapshot-testing) [![@pointfreeco](https://img.shields.io/badge/contact-@pointfreeco-5AA9E7.svg?style=flat)](https://twitter.com/pointfreeco)
 
 Delightful Swift snapshot testing.
 
@@ -27,9 +27,11 @@ class MyViewControllerTests: XCTestCase {
 
 When an assertion first runs, a snapshot is automatically recorded to disk and the test will fail, printing out the file path of any newly-recorded reference.
 
-> 🛑 failed - Recorded: …
+> 🛑 failed - No reference was found on disk. Automatically recorded snapshot: …
 >
-> "…/MyAppTests/\_\_Snapshots\_\_/MyViewControllerTests/testMyViewController.png"
+> open "…/MyAppTests/\_\_Snapshots\_\_/MyViewControllerTests/testMyViewController.png"
+>
+> Re-run "testMyViewController" to test against the newly-recorded snapshot.
 
 Repeat test runs will load this reference and compare it with the runtime value. If they don't match, the test will fail and describe the difference.
 
@@ -46,7 +48,7 @@ assertSnapshot(matching: vc, as: .image)
 
 ## Snapshot Anything
 
-While most snapshot testing libraries in the Swift community are limited to `UIView`s and `UIImage`s, SnapshotTesting can work with _any_ value and _any_ format on _any_ Swift platform!
+While most snapshot testing libraries in the Swift community are limited to `UIImage`s of `UIView`s, SnapshotTesting can work with _any_ format of _any_ value on _any_ Swift platform!
 
 The `assertSnapshot` function accepts a value and any snapshot strategy that value supports. This means that a [view](Documentation/Available-Snapshot-Strategies.md#uiview) or [view controller](Documentation/Available-Snapshot-Strategies.md#uiviewcontroller) can be tested against an image representation _and_ against a textual representation of its properties and subview hierarchy.
 
@@ -59,10 +61,19 @@ View testing is [highly configurable](Documentation/Available-Snapshot-Strategie
 
 ``` swift
 assertSnapshot(matching: vc, as: .image(on: .iPhoneSe))
+assertSnapshot(matching: vc, as: .recursiveDescription(on: .iPhoneSe))
+
 assertSnapshot(matching: vc, as: .image(on: .iPhoneSe(.landscape)))
+assertSnapshot(matching: vc, as: .recursiveDescription(on: .iPhoneSe(.landscape)))
+
 assertSnapshot(matching: vc, as: .image(on: .iPhoneX))
+assertSnapshot(matching: vc, as: .recursiveDescription(on: .iPhoneX))
+
 assertSnapshot(matching: vc, as: .image(on: .iPadMini(.portrait)))
+assertSnapshot(matching: vc, as: .recursiveDescription(on: .iPadMini(.portrait)))
 ```
+
+> ⚠️ Warning: Snapshots must be compared using a simulator with the same OS, device gamut, and scale as the simulator that originally took the reference to avoid discrepancies between images.
 
 Better yet, SnapshotTesting isn't limited to views and view controllers! There are [a number of available snapshot strategies](Documentation/Available-Snapshot-Strategies.md) to choose from.
 
@@ -120,8 +131,17 @@ If your data can be represented as an image, text, or data, you can write a snap
 If you use [Carthage](https://github.com/Carthage/Carthage), you can add the following dependency to your `Cartfile`:
 
 ``` ruby
-github "pointfreeco/swift-snapshot-testing" <~ 1.0
+github "pointfreeco/swift-snapshot-testing" ~> 1.4
 ```
+
+> ⚠️ Warning: Carthage instructs you to drag frameworks into your Xcode project. Xcode may automatically attempt to link these frameworks to your app target. `SnapshotTesting.framework` is only compatible with test targets, so when you first add it to your project:
+>
+>  1. Remove `SnapshotTesting.framework` from any non-test target it may have been added to.
+>  2. Add `SnapshotTesting.framework` to any applicable test targets.
+>  3. Add a **New Copy Build Phase** to any applicable test targets with **Destination** set to "Frameworks", and add `SnapshotTesting.framework` as an item to this phase.
+>  4. Do _not_ add `SnapshotTesting.framework` to the "Input Files" or "Output Files" of your app target's Carthage `copy-frameworks` **Run Script Phase**.
+>
+> See Carthage's "[Adding frameworks to unit tests or a framework](https://github.com/Carthage/Carthage#adding-frameworks-to-unit-tests-or-a-framework)" documentation for more.
 
 ### CocoaPods
 
@@ -129,7 +149,7 @@ If your project uses [CocoaPods](https://cocoapods.org), add the pod to any appl
 
 ```ruby
 target 'MyAppTests' do
-  pod 'SnapshotTesting', '<~ 1.0'
+  pod 'SnapshotTesting', '~> 1.4'
 end
 ```
 
@@ -139,7 +159,7 @@ If you want to use SnapshotTesting in a project that uses [SwiftPM](https://swif
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/pointfreeco/swift-snapshot-testing.git", from: "1.0.0"),
+  .package(url: "https://github.com/pointfreeco/swift-snapshot-testing.git", from: "1.4.0"),
 ]
 ```
 
@@ -157,13 +177,27 @@ dependencies: [
   - **`Codable` support**. Snapshot encodable data structures into their [JSON](Documentation/Available-Snapshot-Strategies.md#json) and [property list](Documentation/Available-Snapshot-Strategies.md#plist) representations.
   - **Custom diff tool integration**.
 
+## Plug-ins
+
+  - [swift-snapshot-testing-nimble](https://github.com/Killectro/swift-snapshot-testing-nimble) adds [Nimble](https://github.com/Quick/Nimble) matchers for SnapshotTesting.
+
+  - [swift-html](https://github.com/pointfreeco/swift-html) is a Swift DSL for type-safe, extensible, and transformable HTML documents and includes an `HtmlSnapshotTesting` module to snapshot test its HTML documents.
+
+Have you written your own SnapshotTesting plug-in? [Add it here](https://github.com/pointfreeco/swift-snapshot-testing/edit/master/README.md) and submit a pull request!
+  
+## Related Tools
+
+  - [`iOSSnapshotTestCase`](https://github.com/uber/ios-snapshot-test-case/) helped introduce screen shot testing to a broad audience in the iOS community. Experience with it inspired the creation of this library.
+
+  - [Jest](https://jestjs.io) brought generalized snapshot testing to the JavaScript community with a polished user experience. Several features of this library (diffing, automatically capturing new snapshots) were directly influenced.
+
 ## Learn More
 
 SnapshotTesting was designed with [witness-oriented programming](https://www.pointfree.co/episodes/ep39-witness-oriented-library-design).
 
 This concept (and more) are explored thoroughly in a series of episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and Swift hosted by [Brandon Williams](https://github.com/mbrandonw) and [Stephen Celis](https://github.com/stephencelis).
 
-Witness-oriented programming was explored in the following episodes:
+Witness-oriented programming and the design of this library was explored in the following [Point-Free](https://www.pointfree.co) episodes:
 
   - [Episode 33](https://www.pointfree.co/episodes/ep33-protocol-witnesses-part-1): Protocol Witnesses: Part 1
   - [Episode 34](https://www.pointfree.co/episodes/ep34-protocol-witnesses-part-1): Protocol Witnesses: Part 2
@@ -172,9 +206,11 @@ Witness-oriented programming was explored in the following episodes:
   - [Episode 37](https://www.pointfree.co/episodes/ep37-protocol-oriented-library-design-part-1): Protocol-Oriented Library Design: Part 1
   - [Episode 38](https://www.pointfree.co/episodes/ep38-protocol-oriented-library-design-part-2): Protocol-Oriented Library Design: Part 2
   - [Episode 39](https://www.pointfree.co/episodes/ep39-witness-oriented-library-design): Witness-Oriented Library Design
+  - [Episode 40](https://www.pointfree.co/episodes/ep40-async-functional-refactoring): Async Functional Refactoring
+  - [Episode 41](https://www.pointfree.co/episodes/ep41-a-tour-of-snapshot-testing): A Tour of Snapshot Testing 🆓
 
-<a href="https://www.pointfree.co/episodes/ep26-domain-specific-languages-part-1">
-  <img alt="video poster image" src="https://d1hf1soyumxcgv.cloudfront.net/0039-witness-oriented-library-design/poster.jpg" width="480">
+<a href="https://www.pointfree.co/episodes/ep41-a-tour-of-snapshot-testing">
+  <img alt="video poster image" src="https://d1hf1soyumxcgv.cloudfront.net/0041-tour-of-snapshot-testing/0041-poster.jpg" width="480">
 </a>
 
 ## License
