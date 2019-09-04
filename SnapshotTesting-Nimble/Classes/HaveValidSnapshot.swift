@@ -23,11 +23,20 @@ public func haveValidSnapshot<Value, Format>(
             return PredicateResult(status: .fail, message: .fail("have valid snapshot"))
         }
 
+        let fileUrl = URL(fileURLWithPath: "\(file)", isDirectory: false)
+        let fileName = fileUrl.deletingPathExtension().lastPathComponent
+
+        let snapshotDirectoryPath = fileUrl
+                .deletingLastPathComponent()
+                .appendingPathComponent("\(fileName).snapshots")
+                .path
+
         guard let errorMessage = verifySnapshot(
             matching: value,
             as: strategy,
             named: name,
             record: record,
+            snapshotDirectory: snapshotDirectoryPath,
             timeout: timeout,
             file: file,
             testName: testName,
