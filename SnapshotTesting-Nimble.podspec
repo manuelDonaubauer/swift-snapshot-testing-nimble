@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
         :tag => "0.1.0"
     }
 
-    s.dependency "SnapshotTesting", "1.6.0"
+    s.dependency "SnapshotTesting", "~> 1.6"
     s.dependency "Nimble"
 
     s.swift_version = "5.0"
