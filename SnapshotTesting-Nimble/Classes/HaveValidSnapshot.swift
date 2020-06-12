@@ -27,7 +27,7 @@ public func haveValidSnapshot<Value, Format>(
             matching: value,
             as: strategy,
             named: name,
-            record: record,
+            record: recording,
             timeout: timeout,
             file: file,
             testName: testName,
