@@ -1,6 +1,6 @@
 {
   "name": "SnapshotTesting-Nimble",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "summary": "Nimble matchers for swift-snapshot-testing by pointfreeco",
   "description": "Implementation heavily inspired by Ash Furrow's wonderful Nimble-Snapshots.",
   "homepage": "https://github.com/killectro/swift-snapshot-testing-nimble",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "SnapshotTesting": [
-      "1.6.0"
+
     ],
     "Nimble": [
 
