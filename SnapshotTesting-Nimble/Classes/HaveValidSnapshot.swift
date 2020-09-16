@@ -15,7 +15,7 @@ public func haveValidSnapshot<Value, Format>(
     record recording: Bool = false,
     timeout: TimeInterval = 5,
     file: StaticString = #file,
-    testName: String = CurrentTestCaseTracker.shared.currentTestCase?.sanitizedName ?? #function,
+    testName: String = CurrentCaseTracker.shared.currentTestCase?.sanitizedName ?? #function,
     line: UInt = #line
     ) -> Predicate<Value> {
     return Predicate { actualExpression in

@@ -9,8 +9,8 @@
 import Foundation
 import XCTest
 
-@objc public final class CurrentTestCaseTracker: NSObject, XCTestObservation {
-    @objc public static let shared = CurrentTestCaseTracker()
+@objc public final class CurrentCaseTracker: NSObject, XCTestObservation {
+    @objc public static let shared = CurrentCaseTracker()
 
     public private(set) var currentTestCase: XCTestCase?
 
