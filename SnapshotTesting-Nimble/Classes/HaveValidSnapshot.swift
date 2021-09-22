@@ -14,13 +14,11 @@ public func haveValidSnapshot<Value, Format>(
     named name: String? = nil,
     record recording: Bool = false,
     timeout: TimeInterval = 5,
+    testName: String = #function,
     file: StaticString = #file,
-    testName: String? = nil,
     line: UInt = #line
-    ) -> Predicate<Value> {
-    let testName = testName
-    ?? CurrentCaseTracker.shared.currentTestCase?.sanitizedName
-    ?? CurrentCaseTracker.sanitize(#function)
+) -> Predicate<Value> {
+    let testName = sanitize(testName)
 
     return Predicate { actualExpression in
         guard let value = try actualExpression.evaluate() else {
@@ -45,4 +43,15 @@ public func haveValidSnapshot<Value, Format>(
             message: .fail(errorMessage)
         )
     }
+}
+
+private func sanitize(_ fullName: String) -> String {
+    let characterSet = CharacterSet(charactersIn: "[]+-")
+    #if swift(>=4)
+    let name = fullName.components(separatedBy: characterSet).joined()
+    #else
+    let name = (fullName ?? "").components(separatedBy: characterSet).joined()
+    #endif
+
+    return name
 }
