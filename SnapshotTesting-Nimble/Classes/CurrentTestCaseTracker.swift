@@ -27,11 +27,8 @@ import XCTest
     @objc public func testCaseDidFinish(_ testCase: XCTestCase) {
         currentTestCase = nil
     }
-}
 
-extension XCTestCase {
-    public var sanitizedName: String? {
-        let fullName = self.name
+    internal static func sanitize(_ fullName: String) -> String {
         let characterSet = CharacterSet(charactersIn: "[]+-")
         #if swift(>=4)
         let name = fullName.components(separatedBy: characterSet).joined()
@@ -48,5 +45,11 @@ extension XCTestCase {
         }
 
         return name
+    }
+}
+
+extension XCTestCase {
+    internal var sanitizedName: String? {
+        return CurrentCaseTracker.sanitize(self.name)
     }
 }
