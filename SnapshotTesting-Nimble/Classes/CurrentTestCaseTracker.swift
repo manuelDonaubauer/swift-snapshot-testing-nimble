@@ -10,6 +10,12 @@ import Foundation
 import XCTest
 
 @objc public final class CurrentCaseTracker: NSObject, XCTestObservation {
+    public override init() {
+        super.init()
+        
+        XCTestObservationCenter.shared.addTestObserver(self)
+    }
+    
     @objc public static let shared = CurrentCaseTracker()
 
     public private(set) var currentTestCase: XCTestCase?
