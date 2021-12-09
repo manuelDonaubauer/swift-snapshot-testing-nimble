@@ -8,13 +8,14 @@
 import Foundation
 import Nimble
 import SnapshotTesting
+import SnapshotTesting_NimbleObjc
 
 public func haveValidSnapshot<Value, Format>(
     as strategy: Snapshotting<Value, Format>,
     named name: String? = nil,
     record recording: Bool = false,
     timeout: TimeInterval = 5,
-    testName: String = #function,
+    testName: String = CurrentTestCaseTracker.shared().currentTestCase?.sanitizedName ?? #function,
     file: StaticString = #file,
     line: UInt = #line
 ) -> Predicate<Value> {

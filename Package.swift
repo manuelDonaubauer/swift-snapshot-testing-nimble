@@ -27,9 +27,14 @@ let package = Package(
             dependencies: [ 
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
                 "Quick", 
-                "Nimble" 
+                "Nimble",
+                "SnapshotTesting_NimbleObjc"
             ],
-            path: "SnapshotTesting-Nimble/Classes"
+            exclude: ["../../Example"]
+        ),
+        .target(
+            name: "SnapshotTesting_NimbleObjc",
+            dependencies: []
         )
     ]
 )
