@@ -8,6 +8,7 @@
 
 import Foundation
 import XCTest
+import Quick
 
 extension XCTestCase {
     public var sanitizedName: String? {

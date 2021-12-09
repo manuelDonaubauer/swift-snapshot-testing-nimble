@@ -34,7 +34,7 @@ let package = Package(
         ),
         .target(
             name: "SnapshotTesting_NimbleObjc",
-            dependencies: []
+            dependencies: ["Quick"]
         )
     ]
 )
