@@ -20,7 +20,7 @@ extension XCTestCase {
         let name = (fullName ?? "").components(separatedBy: characterSet).joined()
         #endif
 
-        if let quickClass = NSClassFromString("QuickSpec"), self.isKind(of: quickClass) {
+        if self.isKind(of: QuickSpec.self) {
             let className = String(describing: type(of: self))
             if let range = name.range(of: className), range.lowerBound == name.startIndex {
                 return name.replacingCharacters(in: range, with: "")
